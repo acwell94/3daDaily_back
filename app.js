@@ -3,12 +3,14 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', false);
 const usersRouter = require('./routes/users-routes');
+const contentsRouter = require('./routes/contents-routes');
 const HttpError = require('./models/http-error');
 const app = express();
 
 app.use(bodyParser.json());
 
 app.use('/users', usersRouter);
+app.use('/contents', contentsRouter);
 
 app.use((req, res, next) => {
   const error = new HttpError('경로를 찾을 수 없습니다.', 404);

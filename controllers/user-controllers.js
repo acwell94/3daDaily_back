@@ -14,7 +14,7 @@ let EXAMPLE_DATA = [
     pair: [],
   },
 ];
-
+// 회원가입
 const signUp = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -58,7 +58,7 @@ const signUp = async (req, res, next) => {
 
   res.status(201).json({ user: createUser.toObject({ getters: true }) });
 };
-
+// 회원탈퇴
 const deleteUser = async (req, res, next) => {
   const userId = req.params.uid;
 
