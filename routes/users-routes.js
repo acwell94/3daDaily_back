@@ -6,6 +6,8 @@ const router = express.Router();
 
 const userControllers = require("../controllers/user-controllers");
 
+router.get("/findUser/:mail", userControllers.findUser);
+router.post("/createPair", userControllers.createPair);
 router.post(
   "/signup",
   [

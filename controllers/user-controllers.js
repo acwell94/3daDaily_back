@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const mongoose = require("mongoose");
 
 let EXAMPLE_DATA = [
   {
@@ -15,6 +16,58 @@ let EXAMPLE_DATA = [
     pair: [],
   },
 ];
+// 유저 찾기
+
+const findUser = async (req, res, next) => {
+  const email = req.params.mail;
+  let foundUser;
+  try {
+    foundUser = await User.findOne({ email: email });
+  } catch (err) {
+    const error = new HttpError("알수없는 에러가 발생하였습니다.", 500);
+    return next(error);
+  }
+  if (!foundUser) {
+    const error = new HttpError("존재하지 않는 아이디입니다.", 404);
+    return next(error);
+  }
+
+  res.json({ foundUser: foundUser.toObject({ getters: true }) });
+};
+
+// 친구 추가하기
+
+const createPair = async (req, res, next) => {
+  const { pairId, myId } = req.body;
+
+  let myInfo;
+  let pairInfo;
+  try {
+    myInfo = await User.findById(myId);
+    pairInfo = await User.findById(pairId);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  try {
+    myInfo.pair.push(pairId);
+    pairInfo.pair.push(myId);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+  try {
+    myInfo.save();
+    pairInfo.save();
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  res.status(201).json({ message: "친구 등록에 성공하였습니다." });
+};
+
 // 로그인
 const login = async (req, res, next) => {
   const { email, password } = req.body;
@@ -173,6 +226,8 @@ const deleteUser = async (req, res, next) => {
 
   res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
 };
+exports.findUser = findUser;
+exports.createPair = createPair;
 exports.login = login;
 exports.signUp = signUp;
 exports.deleteUser = deleteUser;
