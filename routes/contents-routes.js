@@ -7,7 +7,7 @@ const router = express.Router();
 const contentsControllers = require("../controllers/contents-controllers");
 const checkAuth = require("../middleware/check-auth");
 
-router.get("/:cid", contentsControllers.getContents);
+router.get("/:uid", contentsControllers.getContents);
 
 router.use(checkAuth);
 

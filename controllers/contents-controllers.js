@@ -105,8 +105,8 @@ const createContents = async (req, res, next) => {
 //  글 불러오기
 
 const getContents = async (req, res, next) => {
-  const contentsId = req.params.cid;
-  const Story = mongoose.model(`${contentsId}`, Contents);
+  const userId = req.params.uid;
+  const Story = mongoose.model(`${userId}`, Contents);
   let patchedContents;
   try {
     patchedContents = await Story.find({}).sort({ date: -1 });
