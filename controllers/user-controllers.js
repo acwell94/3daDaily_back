@@ -16,7 +16,7 @@ let EXAMPLE_DATA = [
     pair: [],
   },
 ];
-// 유저 찾기
+// 친구 찾기
 
 const findUser = async (req, res, next) => {
   const email = req.params.mail;

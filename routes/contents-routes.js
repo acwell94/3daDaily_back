@@ -7,6 +7,8 @@ const router = express.Router();
 const contentsControllers = require("../controllers/contents-controllers");
 const checkAuth = require("../middleware/check-auth");
 
+router.get("/:cid", contentsControllers.getContents);
+
 router.use(checkAuth);
 
 router.post(
@@ -27,4 +29,5 @@ router.post(
   contentsControllers.createContents
 );
 
+router.delete("/:cid/:pid", contentsControllers.deleteContents);
 module.exports = router;

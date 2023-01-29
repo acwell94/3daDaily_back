@@ -27,7 +27,7 @@ let EXAMPLE_DATA = [
     creator: "아이디",
   },
 ];
-
+// 글 생성하기
 const createContents = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -102,4 +102,63 @@ const createContents = async (req, res, next) => {
   res.status(201).json({ createdContents });
 };
 
+//  글 불러오기
+
+const getContents = async (req, res, next) => {
+  const contentsId = req.params.cid;
+  const Story = mongoose.model(`${contentsId}`, Contents);
+  let patchedContents;
+  try {
+    patchedContents = await Story.find({}).sort({ date: -1 });
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  if (patchedContents.length === 0) {
+    const error = new HttpError("작성된 게시글이 없습니다.", 404);
+    return next(error);
+  }
+  res.status(200).json({ story: patchedContents });
+};
+
+// 글 삭제
+
+const deleteContents = async (req, res, next) => {
+  const collectionId = req.params.cid;
+  const contentsId = req.params.pid;
+
+  const Story = mongoose.model(`${collectionId}`, Contents);
+
+  let contents;
+  try {
+    contents = await Story.findById(contentsId).populate("creator");
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  if (!contents) {
+    const error = new HttpError("삭제할 스토리가 없습니다.", 400);
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await contents.remove({ session: sess });
+    contents.creator.contents.pull(contents);
+    await contents.creator.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  res.status(200).json({ story: contents });
+};
+
 exports.createContents = createContents;
+exports.getContents = getContents;
+exports.deleteContents = deleteContents;
