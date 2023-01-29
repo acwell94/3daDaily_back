@@ -8,6 +8,7 @@ const userControllers = require("../controllers/user-controllers");
 
 router.get("/findUser/:mail", userControllers.findUser);
 router.post("/createPair", userControllers.createPair);
+router.post("/deletePair", userControllers.deletePair);
 router.post(
   "/signup",
   [

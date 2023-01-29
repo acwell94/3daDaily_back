@@ -58,14 +58,43 @@ const createPair = async (req, res, next) => {
     return next(error);
   }
   try {
-    myInfo.save();
-    pairInfo.save();
+    await myInfo.save();
+    await pairInfo.save();
   } catch (err) {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
 
   res.status(201).json({ message: "친구 등록에 성공하였습니다." });
+};
+
+// 친구 삭제하기
+
+const deletePair = async (req, res, next) => {
+  const { pairId, myId } = req.body;
+
+  let myInfo;
+  let pairInfo;
+  try {
+    myInfo = await User.findById(myId);
+    pairInfo = await User.findById(pairId);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  myInfo.pair = myInfo.pair.filter((el) => el.toString() !== pairId);
+  pairInfo.pair = pairInfo.pair.filter((el) => el.toString() !== myId);
+  try {
+    await myInfo.save();
+    await pairInfo.save();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.1", 500);
+    return next(error);
+  }
+
+  res.status(200).json({ message: "친구 삭제가 완료되었습니다." });
 };
 
 // 로그인
@@ -228,6 +257,7 @@ const deleteUser = async (req, res, next) => {
 };
 exports.findUser = findUser;
 exports.createPair = createPair;
+exports.deletePair = deletePair;
 exports.login = login;
 exports.signUp = signUp;
 exports.deleteUser = deleteUser;
