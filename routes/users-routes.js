@@ -18,6 +18,7 @@ router.post(
 );
 
 router.post("/login", userControllers.login);
+router.post("/findId", userControllers.findId);
 
 router.use(checkAuth);
 router.get("/findUser/:mail", userControllers.findUser);

@@ -156,6 +156,24 @@ const signUp = async (req, res, next) => {
   });
 };
 
+const findId = async (req, res, next) => {
+  const { name } = req.body;
+
+  let foundUser;
+  try {
+    foundUser = await User.find({ name: name }, [
+      "-password",
+      "-contents",
+      "-pair",
+      "-__v",
+    ]);
+  } catch (err) {
+    const error = new HttpError("아이디가 없습니다.", 403);
+    return next(error);
+  }
+  res.status(200).json({ foundUser });
+};
+
 // 친구 찾기
 
 const findUser = async (req, res, next) => {
@@ -386,11 +404,12 @@ const resetPassword = async (req, res, next) => {
   res.status(200).json({ message: "비밀번호가 재설정 되었습니다." });
 };
 
+exports.login = login;
+exports.signUp = signUp;
+exports.findId = findId;
 exports.findUser = findUser;
 exports.createPair = createPair;
 exports.getPair = getPair;
 exports.deletePair = deletePair;
-exports.login = login;
-exports.signUp = signUp;
 exports.deleteUser = deleteUser;
 exports.resetPassword = resetPassword;
