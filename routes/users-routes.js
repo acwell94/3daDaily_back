@@ -6,9 +6,10 @@ const router = express.Router();
 
 const userControllers = require("../controllers/user-controllers");
 const checkAuth = require("../middleware/check-auth");
-
+const fileUpload = require("../middleware/file-upload");
 router.post(
   "/signup",
+  fileUpload.single("image"),
   [
     check("name").not().isEmpty(),
     check("email").normalizeEmail().isEmail(),
@@ -27,4 +28,5 @@ router.get("/getPair", userControllers.getPair);
 router.post("/deletePair", userControllers.deletePair);
 router.delete("/:uid", userControllers.deleteUser);
 router.patch("/resetPassword/:uid", userControllers.resetPassword);
+router.patch("/changeProfile", userControllers.changeProfile);
 module.exports = router;

@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const mongoose = require("mongoose");
 const Contents = require("../models/contents");
+const fs = require("fs");
 let EXAMPLE_DATA = [
   {
     name: "minyoung",
@@ -82,7 +83,7 @@ const signUp = async (req, res, next) => {
       new HttpError("회원가입을 할 수 없습니다. 입력 값을 확인해 주세요.", 422)
     );
   }
-  const { name, email, password, profileImg } = req.body;
+  const { name, email, password } = req.body;
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -113,8 +114,7 @@ const signUp = async (req, res, next) => {
     name,
     email,
     password: hashedPassword,
-    profileImg:
-      "http://t1.daumcdn.net/friends/prod/editor/dc8b3d02-a15a-4afa-a88b-989cf2a50476.jpg",
+    profileImg: req.file.path,
     contents: [],
     pair: [],
   });
@@ -155,7 +155,7 @@ const signUp = async (req, res, next) => {
     token: token,
   });
 };
-
+// 아이디 찾기
 const findId = async (req, res, next) => {
   const { name } = req.body;
 
@@ -341,8 +341,13 @@ const deleteUser = async (req, res, next) => {
     );
     return next(error);
   }
+  const imagePath = user.profileImg;
+
   const UserContents = mongoose.model(`${req.userData.userId}`, Contents);
   if (!UserContents) {
+    fs.unlink(imagePath, (err) => {
+      console.log(err);
+    });
     res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
   } else {
     try {
@@ -352,13 +357,16 @@ const deleteUser = async (req, res, next) => {
       return next();
     }
   }
+  fs.unlink(imagePath, (err) => {
+    console.log(err);
+  });
   res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
 };
 
 // 비밀번호 재설정
 
 const resetPassword = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { password } = req.body;
 
   let foundUser;
   try {
@@ -396,12 +404,39 @@ const resetPassword = async (req, res, next) => {
     await foundUser.save();
   } catch (err) {
     const error = new HttpError(
-      "비밀 번호 변경이 실패하였습니다. 다시 시도해 주세요.",
+      "비밀번호 변경이 실패하였습니다. 다시 시도해 주세요.",
       500
     );
     return next(error);
   }
   res.status(200).json({ message: "비밀번호가 재설정 되었습니다." });
+};
+
+// 프로필 이미지 변경
+
+const changeProfile = async (req, res, next) => {
+  let foundUser;
+
+  try {
+    foundUser = await User.findById(req.userData.userId);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+  const imagePath = foundUser.profileImg;
+
+  foundUser.profileImg = req.file.path;
+
+  try {
+    await foundUser.save();
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+  fs.unlink(imagePath, (err) => {
+    console.log(err);
+  });
+  res.status(200).json({ message: "프로필이 변경되었습니다." });
 };
 
 exports.login = login;
@@ -413,3 +448,4 @@ exports.getPair = getPair;
 exports.deletePair = deletePair;
 exports.deleteUser = deleteUser;
 exports.resetPassword = resetPassword;
+exports.changeProfile = changeProfile;

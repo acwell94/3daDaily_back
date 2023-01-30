@@ -6,13 +6,14 @@ const router = express.Router();
 
 const contentsControllers = require("../controllers/contents-controllers");
 const checkAuth = require("../middleware/check-auth");
-
+const fileUpload = require("../middleware/file-upload");
 router.get("/:uid", contentsControllers.getContents);
 
 router.use(checkAuth);
 
 router.post(
   "/",
+  fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
     check("firstContents").not().isEmpty().isLength({ min: 10 }),
@@ -31,6 +32,7 @@ router.post(
 
 router.patch(
   "/:pid",
+  fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
     check("firstContents").not().isEmpty().isLength({ min: 10 }),
