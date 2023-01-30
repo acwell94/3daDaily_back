@@ -25,5 +25,5 @@ router.post("/createPair", userControllers.createPair);
 router.get("/getPair", userControllers.getPair);
 router.post("/deletePair", userControllers.deletePair);
 router.delete("/:uid", userControllers.deleteUser);
-
+router.patch("/resetPassword/:uid", userControllers.resetPassword);
 module.exports = router;

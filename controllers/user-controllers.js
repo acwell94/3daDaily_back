@@ -336,6 +336,56 @@ const deleteUser = async (req, res, next) => {
   }
   res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
 };
+
+// 비밀번호 재설정
+
+const resetPassword = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  let foundUser;
+  try {
+    foundUser = await User.findById(req.userData.userId);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+  if (!foundUser) {
+    const error = new HttpError("회원 정보가 없습니다.", 403);
+    return next(error);
+  }
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(password, foundUser.password);
+  } catch (err) {
+    const error = new HttpError("기존 비밀번호와 동일합니다.", 500);
+  }
+  if (isValidPassword) {
+    const error = new HttpError("기존 비밀번호와 동일합니다.", 403);
+    return next(error);
+  }
+
+  let hashedNewPassword;
+  try {
+    hashedNewPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  foundUser.password = hashedNewPassword;
+
+  try {
+    await foundUser.save();
+  } catch (err) {
+    const error = new HttpError(
+      "비밀 번호 변경이 실패하였습니다. 다시 시도해 주세요.",
+      500
+    );
+    return next(error);
+  }
+  res.status(200).json({ message: "비밀번호가 재설정 되었습니다." });
+};
+
 exports.findUser = findUser;
 exports.createPair = createPair;
 exports.getPair = getPair;
@@ -343,3 +393,4 @@ exports.deletePair = deletePair;
 exports.login = login;
 exports.signUp = signUp;
 exports.deleteUser = deleteUser;
+exports.resetPassword = resetPassword;
