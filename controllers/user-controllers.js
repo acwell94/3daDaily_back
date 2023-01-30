@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const mongoose = require("mongoose");
-
+const Contents = require("../models/contents");
 let EXAMPLE_DATA = [
   {
     name: "minyoung",
@@ -134,7 +134,6 @@ const deletePair = async (req, res, next) => {
       await myInfo.save();
       await pairInfo.save();
     } catch (err) {
-      console.log(err);
       const error = new HttpError("알 수 없는 오류가 발생하였습니다.1", 500);
       return next(error);
     }
@@ -266,6 +265,14 @@ const signUp = async (req, res, next) => {
     return next(error);
   }
 
+  const UserContents = mongoose.model(`${createdUser.id}`, Contents);
+
+  try {
+    await UserContents.createCollection();
+  } catch (err) {
+    console.log(err);
+  }
+
   res.status(201).json({
     userId: createdUser.id,
     email: createdUser.email,
@@ -298,7 +305,17 @@ const deleteUser = async (req, res, next) => {
     );
     return next(error);
   }
-
+  const UserContents = mongoose.model(`${userId}`, Contents);
+  if (!UserContents) {
+    res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
+  } else {
+    try {
+      await UserContents.collection.drop();
+    } catch (err) {
+      console.log(err);
+      return next();
+    }
+  }
   res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
 };
 exports.findUser = findUser;

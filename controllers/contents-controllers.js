@@ -132,7 +132,10 @@ const deleteContents = async (req, res, next) => {
 
   let contents;
   try {
-    contents = await Story.findById(contentsId).populate("creator");
+    contents = await Story.findById(contentsId).populate(
+      "creator",
+      "-password"
+    );
   } catch (err) {
     console.log(err);
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
