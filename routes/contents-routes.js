@@ -29,5 +29,22 @@ router.post(
   contentsControllers.createContents
 );
 
-router.delete("/:cid/:pid", contentsControllers.deleteContents);
+router.patch(
+  "/:pid",
+  [
+    check("title").not().isEmpty(),
+    check("firstContents").not().isEmpty().isLength({ min: 10 }),
+    check("secondContents").not().isEmpty().isLength({ min: 10 }),
+    check("thirdContents").not().isEmpty().isLength({ min: 10 }),
+    check("date").not().isEmpty(),
+    check("weather").not().isEmpty(),
+    check("address").not().isEmpty(),
+    check("withWhom").not().isEmpty(),
+    check("what").not().isEmpty(),
+    check("feeling").not().isEmpty(),
+  ],
+  contentsControllers.updateContents
+);
+
+router.delete("/:pid", contentsControllers.deleteContents);
 module.exports = router;

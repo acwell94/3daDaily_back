@@ -48,7 +48,6 @@ const createContents = async (req, res, next) => {
     what,
     feeling,
     image,
-    creator,
   } = req.body;
 
   let coordinates;
@@ -57,7 +56,7 @@ const createContents = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
-  const UserContents = mongoose.model(`${creator}`, Contents);
+  const UserContents = mongoose.model(`${req.userData.userId}`, Contents);
   const createdContents = new UserContents({
     title,
     firstContents,
@@ -72,12 +71,12 @@ const createContents = async (req, res, next) => {
     feeling,
     image:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
-    creator,
+    creator: req.userData.userId,
   });
 
   let user;
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData.userId);
   } catch (err) {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
@@ -122,13 +121,84 @@ const getContents = async (req, res, next) => {
   res.status(200).json({ story: patchedContents });
 };
 
+// 글 수정하기
+
+const updateContents = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return next(new HttpError("입력 값을 확인해 주세요.", 422));
+  }
+
+  const contentsId = req.params.pid;
+
+  const {
+    title,
+    firstContents,
+    secondContents,
+    thirdContents,
+    date,
+    weather,
+    address,
+    withWhom,
+    what,
+    feeling,
+    image,
+  } = req.body;
+
+  let coordinates;
+  try {
+    coordinates = await getCoordsForAddress(address);
+  } catch (error) {
+    return next(error);
+  }
+
+  const Story = mongoose.model(`${req.userData.userId}`, Contents);
+
+  let contents;
+
+  try {
+    contents = await Story.findById(contentsId);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+
+  if (contents.creator.toString() !== req.userData.userId) {
+    console.log(contents.creator, "1");
+    console.log(req.userData.userId);
+    const error = new HttpError("작성자가 아닙니다.", 401);
+    return next(error);
+  }
+
+  contents.title = title;
+  contents.firstContents = firstContents;
+  contents.secondContents = secondContents;
+  contents.thirdContents = thirdContents;
+  contents.date = date;
+  contents.weather = weather;
+  contents.address = address;
+  contents.location = coordinates;
+  contents.withWhom = withWhom;
+  contents.what = what;
+  contents.feeling = feeling;
+  // contents.image = image
+
+  try {
+    await contents.save();
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
+  }
+  res.status(200).json({ contents });
+};
+
 // 글 삭제
 
 const deleteContents = async (req, res, next) => {
-  const collectionId = req.params.cid;
   const contentsId = req.params.pid;
 
-  const Story = mongoose.model(`${collectionId}`, Contents);
+  const Story = mongoose.model(`${req.userData.userId}`, Contents);
 
   let contents;
   try {
@@ -137,7 +207,6 @@ const deleteContents = async (req, res, next) => {
       "-password"
     );
   } catch (err) {
-    console.log(err);
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
@@ -164,4 +233,5 @@ const deleteContents = async (req, res, next) => {
 
 exports.createContents = createContents;
 exports.getContents = getContents;
+exports.updateContents = updateContents;
 exports.deleteContents = deleteContents;
