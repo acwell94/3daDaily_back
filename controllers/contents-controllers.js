@@ -6,6 +6,7 @@ const Contents = require("../models/contents");
 const getCoordsForAddress = require("../util/location");
 const mongoose = require("mongoose");
 const fs = require("fs");
+const dataForm = require("../util/dateForm");
 let EXAMPLE_DATA = [
   {
     title: "잠실롯데타워",
@@ -76,13 +77,16 @@ const createContents = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+
+  const selectedDate = dataForm(new Date(date));
+
   const UserContents = mongoose.model(`${req.userData.userId}`, Contents);
   const createdContents = new UserContents({
     title,
     firstContents,
     secondContents,
     thirdContents,
-    date,
+    date: selectedDate,
     weather,
     address,
     location: coordinates,
@@ -113,7 +117,6 @@ const createContents = async (req, res, next) => {
     await user.save({ session: sess });
     await sess.commitTransaction();
   } catch (err) {
-    console.log(err);
     const error = new HttpError("일기 등록에 실패하였습니다.", 500);
     return next(error);
   }
