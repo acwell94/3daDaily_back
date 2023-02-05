@@ -7,7 +7,7 @@ mongoose.set("strictQuery", false);
 const usersRouter = require("./routes/users-routes");
 const contentsRouter = require("./routes/contents-routes");
 const HttpError = require("./models/http-error");
-
+require("dotenv").config();
 const app = express();
 
 app.use(bodyParser.json());
@@ -45,12 +45,14 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
+const port = process.env.PORT;
+const mongoPW = process.env.MONGO_PW;
 mongoose
   .connect(
-    "mongodb+srv://leminyoung:moon1808316@cluster0.smkjlnw.mongodb.net/3dadaily?retryWrites=true&w=majority"
+    `mongodb+srv://leminyoung:${mongoPW}@cluster0.smkjlnw.mongodb.net/3dadaily?retryWrites=true&w=majority`
   )
   .then(() => {
-    app.listen(5000);
+    app.listen(port);
     console.log("connected");
   })
   .catch((err) => {

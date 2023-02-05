@@ -1,6 +1,7 @@
-const axios = require('axios');
-const HttpError = require('../models/http-error');
-const API_KEY = 'AIzaSyAyyKws_tnyfW1mrKHUB20g5PiEKUxgR-U';
+const axios = require("axios");
+const HttpError = require("../models/http-error");
+require("dotenv").config();
+const API_KEY = process.env.GOOGLE_API_KEY;
 
 async function getCoordsForAddress(address) {
   const response = await axios.get(
@@ -10,8 +11,8 @@ async function getCoordsForAddress(address) {
   );
   const data = response.data;
 
-  if (!data || data.status === 'ZERO_RESULTS') {
-    const error = new HttpError('장소를 찾을 수 없습니다.', 422);
+  if (!data || data.status === "ZERO_RESULTS") {
+    const error = new HttpError("장소를 찾을 수 없습니다.", 422);
     throw error;
   }
 

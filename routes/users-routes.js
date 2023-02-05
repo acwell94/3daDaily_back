@@ -20,6 +20,7 @@ router.post(
 
 router.post("/login", userControllers.login);
 router.post("/findId", userControllers.findId);
+router.post("/checkUser", userControllers.checkUser);
 
 router.use(checkAuth);
 router.get("/findUser/:mail", userControllers.findUser);

@@ -69,6 +69,7 @@ const createContents = async (req, res, next) => {
     withWhom,
     what,
     feeling,
+    // image,
   } = req.body;
 
   let coordinates;
@@ -94,6 +95,7 @@ const createContents = async (req, res, next) => {
     what,
     feeling,
     image: req.file.path,
+    // image,
     creator: req.userData.userId,
   });
 

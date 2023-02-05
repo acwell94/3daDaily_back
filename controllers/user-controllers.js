@@ -6,17 +6,50 @@ const User = require("../models/user");
 const mongoose = require("mongoose");
 const Contents = require("../models/contents");
 const fs = require("fs");
-let EXAMPLE_DATA = [
-  {
-    name: "minyoung",
-    email: "test@test.com",
-    password: "moon1808316@",
-    profileImg:
-      "http://t1.daumcdn.net/friends/prod/editor/dc8b3d02-a15a-4afa-a88b-989cf2a50476.jpg",
-    contents: [],
-    pair: [],
-  },
-];
+require("dotenv").config();
+
+const TOKEN_KEY = process.env.JWT_KEY;
+const REFRESH_KEY = process.env.REFRESH_KEY;
+
+// 유저 확인
+
+const checkUser = async (req, res, next) => {
+  const { refreshToken } = req.body;
+  console.log(refreshToken, "refresh");
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+  let newToken;
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, TOKEN_KEY);
+  } catch (err) {
+    console.log(err);
+    if (err.message === "jwt expired") {
+      try {
+        const decodedRefresh = jwt.verify(refreshToken, REFRESH_KEY);
+
+        newToken = jwt.sign(
+          { userId: decodedRefresh.userId, email: decodedRefresh.email },
+          TOKEN_KEY,
+          {
+            expiresIn: "1h",
+          }
+        );
+
+        res.json({
+          userId: decodedRefresh.userId,
+          email: decodedRefresh.email,
+          token: newToken,
+          refreshToken: refreshToken,
+        });
+      } catch (err) {
+        const error = new HttpError("인증이 만료되었습니다.", 401);
+        return next(error);
+      }
+    }
+  }
+};
 
 // 로그인
 const login = async (req, res, next) => {
@@ -51,13 +84,20 @@ const login = async (req, res, next) => {
   }
 
   let token;
-
+  let refreshToken;
   try {
     token = jwt.sign(
       { userId: existingUser.id, email: existingUser.email },
-      "testToken",
+      TOKEN_KEY,
       {
         expiresIn: "1h",
+      }
+    );
+    refreshToken = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      REFRESH_KEY,
+      {
+        expiresIn: "14d",
       }
     );
   } catch (err) {
@@ -72,6 +112,7 @@ const login = async (req, res, next) => {
     userId: existingUser.id,
     email: existingUser.email,
     token: token,
+    refreshToken: refreshToken,
   });
 };
 
@@ -132,7 +173,7 @@ const signUp = async (req, res, next) => {
   try {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
-      "testToken",
+      TOKEN_KEY,
       { expiresIn: "1h" }
     );
   } catch (err) {
@@ -366,7 +407,7 @@ const deleteUser = async (req, res, next) => {
 // 비밀번호 재설정
 
 const resetPassword = async (req, res, next) => {
-  const { password } = req.body;
+  const { password, newPassword } = req.body;
 
   let foundUser;
   try {
@@ -375,10 +416,7 @@ const resetPassword = async (req, res, next) => {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-  if (!foundUser) {
-    const error = new HttpError("회원 정보가 없습니다.", 403);
-    return next(error);
-  }
+
   let isValidPassword = false;
   try {
     isValidPassword = await bcrypt.compare(password, foundUser.password);
@@ -392,7 +430,7 @@ const resetPassword = async (req, res, next) => {
 
   let hashedNewPassword;
   try {
-    hashedNewPassword = await bcrypt.hash(password, 12);
+    hashedNewPassword = await bcrypt.hash(newPassword, 12);
   } catch (err) {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
@@ -441,6 +479,7 @@ const changeProfile = async (req, res, next) => {
 
 exports.login = login;
 exports.signUp = signUp;
+exports.checkUser = checkUser;
 exports.findId = findId;
 exports.findUser = findUser;
 exports.createPair = createPair;
