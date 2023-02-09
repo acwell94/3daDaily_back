@@ -8,6 +8,7 @@ const contentsSchema = new Schema({
   secondContents: { type: String, required: true },
   thirdContents: { type: String, required: true },
   date: { type: String, required: true },
+  originDate: { type: String, required: true },
   weather: { type: String, required: true },
   address: { type: String, required: true },
   location: {

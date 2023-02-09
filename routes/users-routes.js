@@ -9,7 +9,7 @@ const checkAuth = require("../middleware/check-auth");
 const fileUpload = require("../middleware/file-upload");
 router.post(
   "/signup",
-  fileUpload.single("image"),
+  fileUpload.single("profileImg"),
   [
     check("name").not().isEmpty(),
     check("email").normalizeEmail().isEmail(),
@@ -23,11 +23,16 @@ router.post("/findId", userControllers.findId);
 router.post("/checkUser", userControllers.checkUser);
 
 router.use(checkAuth);
+router.post("/token", userControllers.verifyToken);
 router.get("/findUser/:mail", userControllers.findUser);
 router.post("/createPair", userControllers.createPair);
 router.get("/getPair", userControllers.getPair);
 router.post("/deletePair", userControllers.deletePair);
 router.delete("/:uid", userControllers.deleteUser);
 router.patch("/resetPassword/:uid", userControllers.resetPassword);
-router.patch("/changeProfile", userControllers.changeProfile);
+router.patch(
+  "/changeProfile",
+  fileUpload.single("profileImg"),
+  userControllers.changeProfile
+);
 module.exports = router;

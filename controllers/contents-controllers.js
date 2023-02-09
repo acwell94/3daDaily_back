@@ -7,46 +7,77 @@ const getCoordsForAddress = require("../util/location");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const dataForm = require("../util/dateForm");
-let EXAMPLE_DATA = [
-  {
-    title: "잠실롯데타워",
-    firstContents: "우리나라에서 제일 높은 빌딩",
-    secondContents: "롯데꺼",
-    thirdContents: "크다",
-    date: "2023-01-12",
-    weather: "1",
-    address: "서울 송파구",
-    location: {
-      lat: 37,
-      lng: 42,
-    },
-    withWhom: "1",
-    what: "2",
-    feeling: "2",
-    image:
-      "http://t1.daumcdn.net/friends/prod/editor/dc8b3d02-a15a-4afa-a88b-989cf2a50476.jpg",
-    creator: "아이디",
-  },
-];
 
 //  글 불러오기
 
 const getContents = async (req, res, next) => {
   const userId = req.params.uid;
   const Story = mongoose.model(`${userId}`, Contents);
-  let patchedContents;
+
+  let user;
   try {
-    patchedContents = await Story.find({}).sort({ date: -1 });
+    user = await User.findById(userId, [
+      "-password",
+      "-contents",
+      "-pair",
+      "-__v",
+    ]);
   } catch (err) {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
 
-  if (patchedContents.length === 0) {
-    const error = new HttpError("작성된 게시글이 없습니다.", 404);
+  let patchedContents;
+  try {
+    patchedContents = await Story.find({}, ["-__v"]).sort({ date: -1 });
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-  res.status(200).json({ story: patchedContents });
+
+  res.status(200).json({
+    user,
+    story: patchedContents.map((contents) =>
+      contents.toObject({ getters: true })
+    ),
+  });
+};
+
+// 게시글 디테일 불러오기
+
+const getDetail = async (req, res, next) => {
+  const contentsId = req.params.cid;
+  const Story = mongoose.model(`${req.userData.userId}`, Contents);
+
+  let foundData;
+
+  try {
+    foundData = await Story.findById(contentsId, ["-__v"]);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.1", 500);
+    return next(error);
+  }
+
+  if (!foundData) {
+    const error = new HttpError("글이 존재하지 않습니다.", 400);
+    return next(error);
+  }
+  let user;
+
+  try {
+    user = await User.findById(req.userData.userId, [
+      "-password",
+      "-contents",
+      "-pair",
+      "-__v",
+      "-profileImg",
+    ]);
+  } catch (err) {
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.2", 500);
+    return next(error);
+  }
+
+  res.json({ user, foundData });
 };
 
 // 글 생성하기
@@ -88,6 +119,7 @@ const createContents = async (req, res, next) => {
     secondContents,
     thirdContents,
     date: selectedDate,
+    originDate: date,
     weather,
     address,
     location: coordinates,
@@ -171,14 +203,14 @@ const updateContents = async (req, res, next) => {
     const error = new HttpError("작성자가 아닙니다.", 401);
     return next(error);
   }
-
+  const selectedDate = dataForm(new Date(date));
   const imagePath = contents.image;
 
   contents.title = title;
   contents.firstContents = firstContents;
   contents.secondContents = secondContents;
   contents.thirdContents = thirdContents;
-  contents.date = date;
+  contents.date = selectedDate;
   contents.weather = weather;
   contents.address = address;
   contents.location = coordinates;
@@ -243,5 +275,6 @@ const deleteContents = async (req, res, next) => {
 
 exports.createContents = createContents;
 exports.getContents = getContents;
+exports.getDetail = getDetail;
 exports.updateContents = updateContents;
 exports.deleteContents = deleteContents;

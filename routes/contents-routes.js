@@ -8,17 +8,18 @@ const contentsControllers = require("../controllers/contents-controllers");
 const checkAuth = require("../middleware/check-auth");
 const fileUpload = require("../middleware/file-upload");
 router.get("/:uid", contentsControllers.getContents);
-
 router.use(checkAuth);
+
+router.get("/detail/:cid", contentsControllers.getDetail);
 
 router.post(
   "/",
   fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
-    check("firstContents").not().isEmpty().isLength({ min: 10 }),
-    check("secondContents").not().isEmpty().isLength({ min: 10 }),
-    check("thirdContents").not().isEmpty().isLength({ min: 10 }),
+    check("firstContents").not().isEmpty(),
+    check("secondContents").not().isEmpty(),
+    check("thirdContents").not().isEmpty(),
     check("date").not().isEmpty(),
     check("weather").not().isEmpty(),
     check("address").not().isEmpty(),
@@ -35,9 +36,9 @@ router.patch(
   fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
-    check("firstContents").not().isEmpty().isLength({ min: 10 }),
-    check("secondContents").not().isEmpty().isLength({ min: 10 }),
-    check("thirdContents").not().isEmpty().isLength({ min: 10 }),
+    check("firstContents").not().isEmpty(),
+    check("secondContents").not().isEmpty(),
+    check("thirdContents").not().isEmpty(),
     check("date").not().isEmpty(),
     check("weather").not().isEmpty(),
     check("address").not().isEmpty(),

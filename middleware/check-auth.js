@@ -11,17 +11,16 @@ module.exports = (req, res, next) => {
 
   try {
     const token = req.headers.authorization.split(" ")[1]; // `Bearer TOKEN`
-
     if (!token) {
-      throw new Error("인증 오류입니다.");
+      throw new Error("인증 오류입니다.1");
     }
     const decodedToken = jwt.verify(token, TOKEN_KEY);
-    console.log(decodedToken, "dd");
+
     req.userData = { userId: decodedToken.userId };
     next();
   } catch (err) {
-    console.log(err);
-    const error = new HttpError("인증 오류입니다.", 401);
+    console.log(err, "이거?");
+    const error = new HttpError("인증 오류입니다.2", 401);
     return next(error);
   }
 };

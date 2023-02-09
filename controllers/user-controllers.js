@@ -7,47 +7,42 @@ const mongoose = require("mongoose");
 const Contents = require("../models/contents");
 const fs = require("fs");
 require("dotenv").config();
-
 const TOKEN_KEY = process.env.JWT_KEY;
 const REFRESH_KEY = process.env.REFRESH_KEY;
 
 // 유저 확인
 
-const checkUser = async (req, res, next) => {
-  const { refreshToken } = req.body;
-  console.log(refreshToken, "refresh");
-  if (req.method === "OPTIONS") {
-    return next();
+// 유저 확인
+
+const verifyToken = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  console.log(token, "tttt");
+  if (!token) {
+    return res.status(401).json({ message: "인증오류입니다." });
   }
-  let newToken;
   try {
-    const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, TOKEN_KEY);
+    const decodedToken = jwt.verify(token, TOKEN_KEY);
+    req.userData = { userId: decodedToken.userId };
+    res.status(200).json({ message: "유효합니다." });
   } catch (err) {
-    console.log(err);
-    if (err.message === "jwt expired") {
-      try {
-        const decodedRefresh = jwt.verify(refreshToken, REFRESH_KEY);
+    res.status(400).json({ message: "유효하지 않은 토큰입니다." });
+  }
+};
 
-        newToken = jwt.sign(
-          { userId: decodedRefresh.userId, email: decodedRefresh.email },
-          TOKEN_KEY,
-          {
-            expiresIn: "1h",
-          }
-        );
-
-        res.json({
-          userId: decodedRefresh.userId,
-          email: decodedRefresh.email,
-          token: newToken,
-          refreshToken: refreshToken,
-        });
-      } catch (err) {
-        const error = new HttpError("인증이 만료되었습니다.", 401);
-        return next(error);
-      }
-    }
+const checkUser = async (req, res, next) => {
+  const { refresh } = req.body;
+  console.log(refresh);
+  try {
+    const decodedToken = jwt.verify(refresh, REFRESH_KEY);
+    const newToken = jwt.sign(
+      { userId: decodedToken.userId, email: decodedToken.email },
+      TOKEN_KEY,
+      { expiresIn: "1h" }
+    );
+    console.log(newToken, "newnew");
+    res.status(200).json({ token: newToken });
+  } catch (err) {
+    console.log("유효하지 않은 리프레시 토큰");
   }
 };
 
@@ -111,6 +106,7 @@ const login = async (req, res, next) => {
   res.json({
     userId: existingUser.id,
     email: existingUser.email,
+    name: existingUser.name,
     token: token,
     refreshToken: refreshToken,
   });
@@ -170,11 +166,19 @@ const signUp = async (req, res, next) => {
   }
 
   let token;
+  let refreshToken;
   try {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
       TOKEN_KEY,
       { expiresIn: "1h" }
+    );
+    refreshToken = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      REFRESH_KEY,
+      {
+        expiresIn: "14d",
+      }
     );
   } catch (err) {
     const error = new HttpError("로그인에 실패하였습니다.", 500);
@@ -194,6 +198,7 @@ const signUp = async (req, res, next) => {
     email: createdUser.email,
     name: createdUser.name,
     token: token,
+    refreshToken: refreshToken,
   });
 };
 // 아이디 찾기
@@ -210,6 +215,10 @@ const findId = async (req, res, next) => {
     ]);
   } catch (err) {
     const error = new HttpError("아이디가 없습니다.", 403);
+    return next(error);
+  }
+  if (foundUser.length === 0) {
+    const error = new HttpError("아이디가 없습니다.", 404);
     return next(error);
   }
   res.status(200).json({ foundUser });
@@ -453,6 +462,7 @@ const resetPassword = async (req, res, next) => {
 // 프로필 이미지 변경
 
 const changeProfile = async (req, res, next) => {
+  const { name } = req.body;
   let foundUser;
 
   try {
@@ -463,7 +473,9 @@ const changeProfile = async (req, res, next) => {
   }
   const imagePath = foundUser.profileImg;
 
-  foundUser.profileImg = req.file.path;
+  foundUser.profileImg =
+    req.file !== undefined ? req.file.path : foundUser.profileImg;
+  foundUser.name = name;
 
   try {
     await foundUser.save();
@@ -479,6 +491,7 @@ const changeProfile = async (req, res, next) => {
 
 exports.login = login;
 exports.signUp = signUp;
+exports.verifyToken = verifyToken;
 exports.checkUser = checkUser;
 exports.findId = findId;
 exports.findUser = findUser;
