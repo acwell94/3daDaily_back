@@ -10,108 +10,6 @@ require("dotenv").config();
 const TOKEN_KEY = process.env.JWT_KEY;
 const REFRESH_KEY = process.env.REFRESH_KEY;
 
-// 유저 확인
-
-// 유저 확인
-
-const verifyToken = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  console.log(token, "tttt");
-  if (!token) {
-    return res.status(401).json({ message: "인증오류입니다." });
-  }
-  try {
-    const decodedToken = jwt.verify(token, TOKEN_KEY);
-    req.userData = { userId: decodedToken.userId };
-    res.status(200).json({ message: "유효합니다." });
-  } catch (err) {
-    res.status(400).json({ message: "유효하지 않은 토큰입니다." });
-  }
-};
-
-const checkUser = async (req, res, next) => {
-  const { refresh } = req.body;
-  console.log(refresh);
-  try {
-    const decodedToken = jwt.verify(refresh, REFRESH_KEY);
-    const newToken = jwt.sign(
-      { userId: decodedToken.userId, email: decodedToken.email },
-      TOKEN_KEY,
-      { expiresIn: "1h" }
-    );
-    console.log(newToken, "newnew");
-    res.status(200).json({ token: newToken });
-  } catch (err) {
-    console.log("유효하지 않은 리프레시 토큰");
-  }
-};
-
-// 로그인
-const login = async (req, res, next) => {
-  const { email, password } = req.body;
-  let existingUser;
-  try {
-    existingUser = await User.findOne({ email: email });
-  } catch (err) {
-    const error = new HttpError(
-      "로그인에 실패하였습니다. 다시 시도해주세요.",
-      500
-    );
-    return next(error);
-  }
-
-  if (!existingUser) {
-    const error = new HttpError("회원 정보가 없습니다.", 403);
-    return next(error);
-  }
-
-  let isValidPassword = false;
-  try {
-    isValidPassword = await bcrypt.compare(password, existingUser.password);
-  } catch (err) {
-    const error = new HttpError("비밀번호가 맞지 않습니다.", 500);
-    return next(error);
-  }
-
-  if (!isValidPassword) {
-    const error = new HttpError("비밀번호가 올바르지 않습니다.", 403);
-    return next(error);
-  }
-
-  let token;
-  let refreshToken;
-  try {
-    token = jwt.sign(
-      { userId: existingUser.id, email: existingUser.email },
-      TOKEN_KEY,
-      {
-        expiresIn: "1h",
-      }
-    );
-    refreshToken = jwt.sign(
-      { userId: existingUser.id, email: existingUser.email },
-      REFRESH_KEY,
-      {
-        expiresIn: "14d",
-      }
-    );
-  } catch (err) {
-    const error = new HttpError(
-      "로그인을 할 수 없습니다. 입력한 정보를 확인해 주세요.",
-      500
-    );
-    return next(error);
-  }
-
-  res.json({
-    userId: existingUser.id,
-    email: existingUser.email,
-    name: existingUser.name,
-    token: token,
-    refreshToken: refreshToken,
-  });
-};
-
 // 회원가입
 const signUp = async (req, res, next) => {
   const errors = validationResult(req);
@@ -201,6 +99,73 @@ const signUp = async (req, res, next) => {
     refreshToken: refreshToken,
   });
 };
+
+// 로그인
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+  let existingUser;
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (err) {
+    const error = new HttpError(
+      "로그인에 실패하였습니다. 다시 시도해주세요.",
+      500
+    );
+    return next(error);
+  }
+
+  if (!existingUser) {
+    const error = new HttpError("회원 정보가 없습니다.", 403);
+    return next(error);
+  }
+
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(password, existingUser.password);
+  } catch (err) {
+    const error = new HttpError("비밀번호가 맞지 않습니다.", 500);
+    return next(error);
+  }
+
+  if (!isValidPassword) {
+    const error = new HttpError("비밀번호가 올바르지 않습니다.", 403);
+    return next(error);
+  }
+
+  let token;
+  let refreshToken;
+  try {
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      TOKEN_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
+    refreshToken = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      REFRESH_KEY,
+      {
+        expiresIn: "14d",
+      }
+    );
+  } catch (err) {
+    const error = new HttpError(
+      "로그인을 할 수 없습니다. 입력한 정보를 확인해 주세요.",
+      500
+    );
+    return next(error);
+  }
+
+  res.json({
+    userId: existingUser.id,
+    email: existingUser.email,
+    name: existingUser.name,
+    token: token,
+    refreshToken: refreshToken,
+  });
+};
+
 // 아이디 찾기
 const findId = async (req, res, next) => {
   const { name } = req.body;
@@ -222,6 +187,43 @@ const findId = async (req, res, next) => {
     return next(error);
   }
   res.status(200).json({ foundUser });
+};
+
+// 유저 확인
+const checkUser = async (req, res, next) => {
+  const { refresh } = req.body;
+  console.log(refresh);
+  try {
+    const decodedToken = jwt.verify(refresh, REFRESH_KEY);
+    const newToken = jwt.sign(
+      { userId: decodedToken.userId, email: decodedToken.email },
+      TOKEN_KEY,
+      { expiresIn: "1h" }
+    );
+    console.log(newToken, "newnew");
+    res.status(200).json({ token: newToken });
+  } catch (err) {
+    console.log("유효하지 않은 리프레시 토큰");
+  }
+};
+
+// 아래는 인증시스템
+
+// 토큰 확인
+
+const verifyToken = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "인증오류입니다." });
+  }
+  try {
+    const decodedToken = jwt.verify(token, TOKEN_KEY);
+    req.userData = { userId: decodedToken.userId };
+    res.status(200).json({ message: "유효합니다." });
+  } catch (err) {
+    res.status(400).json({ message: "유효하지 않은 토큰입니다." });
+  }
 };
 
 // 친구 찾기
@@ -417,7 +419,6 @@ const deleteUser = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   const { password, newPassword } = req.body;
-
   let foundUser;
   try {
     foundUser = await User.findById(req.userData.userId);
@@ -425,15 +426,15 @@ const resetPassword = async (req, res, next) => {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-
   let isValidPassword = false;
   try {
     isValidPassword = await bcrypt.compare(password, foundUser.password);
   } catch (err) {
-    const error = new HttpError("기존 비밀번호와 동일합니다.", 500);
+    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+    return next(error);
   }
-  if (isValidPassword) {
-    const error = new HttpError("기존 비밀번호와 동일합니다.", 403);
+  if (!isValidPassword) {
+    const error = new HttpError("기존 비밀번호를 확인해 주세요.", 403);
     return next(error);
   }
 
@@ -456,7 +457,7 @@ const resetPassword = async (req, res, next) => {
     );
     return next(error);
   }
-  res.status(200).json({ message: "비밀번호가 재설정 되었습니다." });
+  res.json({ message: "비밀번호가 재설정 되었습니다." });
 };
 
 // 프로필 이미지 변경

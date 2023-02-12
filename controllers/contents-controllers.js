@@ -11,6 +11,8 @@ const dataForm = require("../util/dateForm");
 //  글 불러오기
 
 const getContents = async (req, res, next) => {
+  const { category, sort } = req.query;
+
   const userId = req.params.uid;
   const Story = mongoose.model(`${userId}`, Contents);
 
@@ -28,19 +30,36 @@ const getContents = async (req, res, next) => {
   }
 
   let patchedContents;
-  try {
-    patchedContents = await Story.find({}, ["-__v"]).sort({ date: -1 });
-  } catch (err) {
-    const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
-    return next(error);
-  }
+  if (category && sort) {
+    try {
+      patchedContents = await Story.find({ [category]: sort }, ["-__v"]).sort({
+        date: -1,
+      });
+    } catch (err) {
+      const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+      return next(error);
+    }
+    res.status(200).json({
+      user,
+      story: patchedContents.map((contents) =>
+        contents.toObject({ getters: true })
+      ),
+    });
+  } else {
+    try {
+      patchedContents = await Story.find({}, ["-__v"]).sort({ date: -1 });
+    } catch (err) {
+      const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
+      return next(error);
+    }
 
-  res.status(200).json({
-    user,
-    story: patchedContents.map((contents) =>
-      contents.toObject({ getters: true })
-    ),
-  });
+    res.status(200).json({
+      user,
+      story: patchedContents.map((contents) =>
+        contents.toObject({ getters: true })
+      ),
+    });
+  }
 };
 
 // 게시글 디테일 불러오기
