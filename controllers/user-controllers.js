@@ -102,6 +102,7 @@ const signUp = async (req, res, next) => {
 
 // 로그인
 const login = async (req, res, next) => {
+  console.log("hi");
   const { email, password } = req.body;
   let existingUser;
   try {

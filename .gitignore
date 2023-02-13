@@ -13,6 +13,8 @@
 
 .env
 
+.nodemon.json
+
 # misc
 .DS_Store
 .env.local

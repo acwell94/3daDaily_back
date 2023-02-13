@@ -9,7 +9,14 @@ const contentsRouter = require("./routes/contents-routes");
 const HttpError = require("./models/http-error");
 require("dotenv").config();
 const app = express();
+const cors = require("cors");
 
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
 app.use("/uploads/images", express.static(path.join("uploads", "images")));
 app.use((req, res, next) => {
@@ -49,10 +56,10 @@ const port = process.env.PORT;
 const mongoPW = process.env.MONGO_PW;
 mongoose
   .connect(
-    `mongodb+srv://leminyoung:${mongoPW}@cluster0.smkjlnw.mongodb.net/3dadaily?retryWrites=true&w=majority`
+    `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.smkjlnw.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
   )
   .then(() => {
-    app.listen(port);
+    app.listen(port || 5000);
     console.log("connected");
   })
   .catch((err) => {
