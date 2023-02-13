@@ -19,7 +19,6 @@ module.exports = (req, res, next) => {
     req.userData = { userId: decodedToken.userId };
     next();
   } catch (err) {
-    console.log(err, "이거?");
     const error = new HttpError("인증 오류입니다.2", 401);
     return next(error);
   }
