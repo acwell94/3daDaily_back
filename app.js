@@ -48,10 +48,12 @@ app.use((error, req, res, next) => {
 });
 
 const port = process.env.PORT;
+const mongoUser = process.env.MONGO_USER;
 const mongoPW = process.env.MONGO_PW;
+const mongoName = process.env.MONGO_NAME;
 mongoose
   .connect(
-    `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.smkjlnw.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
+    `mongodb+srv://${mongoUser}:${mongoPW}@cluster0.smkjlnw.mongodb.net/${mongoName}?retryWrites=true&w=majority`
   )
   .then(() => {
     app.listen(port || 5000);
