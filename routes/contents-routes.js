@@ -8,6 +8,7 @@ const contentsControllers = require("../controllers/contents-controllers");
 const checkAuth = require("../middleware/check-auth");
 const fileUpload = require("../middleware/file-upload");
 router.get("/:uid", contentsControllers.getContents);
+
 router.use(checkAuth);
 
 router.get("/detail/:cid", contentsControllers.getDetail);
@@ -26,7 +27,7 @@ router.post(
     check("withWhom").not().isEmpty(),
     check("what").not().isEmpty(),
     check("feeling").not().isEmpty(),
-    // check('image').not().isEmpty(),
+    // check("image").not().isEmpty(),
   ],
   contentsControllers.createContents
 );

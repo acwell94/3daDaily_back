@@ -5,10 +5,19 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const mongoose = require("mongoose");
 const Contents = require("../models/contents");
-const fs = require("fs");
+
 require("dotenv").config();
+const AWS = require("aws-sdk");
 const TOKEN_KEY = process.env.JWT_KEY;
 const REFRESH_KEY = process.env.REFRESH_KEY;
+const ACCESS_KEY_ID = process.env.AWS_API_KEY;
+const ACCESS_SECRET_KEY_ID = process.env.AWS_API_SECRET_KEY;
+const ACCESS_REGION = process.env.AWS_REGION;
+const s3 = new AWS.S3({
+  accessKeyId: ACCESS_KEY_ID,
+  secretAccessKey: ACCESS_SECRET_KEY_ID,
+  region: ACCESS_REGION,
+});
 
 // 회원가입
 const signUp = async (req, res, next) => {
@@ -49,7 +58,7 @@ const signUp = async (req, res, next) => {
     name,
     email,
     password: hashedPassword,
-    profileImg: req.file.path,
+    profileImg: req.file.location,
     contents: [],
     pair: [],
   });
@@ -102,7 +111,6 @@ const signUp = async (req, res, next) => {
 
 // 로그인
 const login = async (req, res, next) => {
-  console.log("hi");
   const { email, password } = req.body;
   let existingUser;
   try {
@@ -193,7 +201,6 @@ const findId = async (req, res, next) => {
 // 유저 확인
 const checkUser = async (req, res, next) => {
   const { refresh } = req.body;
-  console.log(refresh);
   try {
     const decodedToken = jwt.verify(refresh, REFRESH_KEY);
     const newToken = jwt.sign(
@@ -201,7 +208,7 @@ const checkUser = async (req, res, next) => {
       TOKEN_KEY,
       { expiresIn: "1h" }
     );
-    console.log(newToken, "newnew");
+
     res.status(200).json({ token: newToken });
   } catch (err) {
     console.log("유효하지 않은 리프레시 토큰");
@@ -381,6 +388,75 @@ const deleteUser = async (req, res, next) => {
     return next(error);
   }
 
+  const imagePath = user.profileImg;
+  const splitImagePath = imagePath.split("/");
+  const imageKey = splitImagePath[splitImagePath.length - 1];
+
+  const UserContents = mongoose.model(`${req.userData.userId}`, Contents);
+
+  let userStory;
+
+  try {
+    userStory = await UserContents.find({}, ["image", "-_id"]);
+  } catch (err) {
+    console.log(err);
+  }
+
+  if (userStory) {
+    const splitUserContentsImage = userStory.map((el) => {
+      const splitting = el.image.split("/");
+      const deletedContentsImage = splitting[splitting.length - 1];
+      return deletedContentsImage;
+    });
+    const deleteUserContentsImage = splitUserContentsImage.map((el) => ({
+      Key: el,
+    }));
+
+    s3.deleteObjects(
+      {
+        Bucket: "3dadaily",
+        Delete: {
+          Objects: deleteUserContentsImage,
+        },
+      },
+      (err, data) => {
+        if (err) console.log(err);
+        else console.log(data);
+      }
+    );
+  }
+
+  if (!UserContents) {
+    s3.deleteObject(
+      {
+        Bucket: "3dadaily",
+        Key: imageKey,
+      },
+      (err, data) => {
+        if (err) console.log(err);
+        else console.log(data);
+      }
+    );
+    res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
+  } else {
+    try {
+      await UserContents.collection.drop();
+    } catch (err) {
+      console.log(err);
+      return next();
+    }
+  }
+  s3.deleteObject(
+    {
+      Bucket: "3dadaily",
+      Key: imageKey,
+    },
+    (err, data) => {
+      if (err) console.log(err);
+      else console.log(data);
+    }
+  );
+
   if (!user) {
     const error = new HttpError("유저를 찾을 수 없습니다.", 400);
     return next(error);
@@ -394,25 +470,7 @@ const deleteUser = async (req, res, next) => {
     );
     return next(error);
   }
-  const imagePath = user.profileImg;
 
-  const UserContents = mongoose.model(`${req.userData.userId}`, Contents);
-  if (!UserContents) {
-    fs.unlink(imagePath, (err) => {
-      console.log(err);
-    });
-    res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
-  } else {
-    try {
-      await UserContents.collection.drop();
-    } catch (err) {
-      console.log(err);
-      return next();
-    }
-  }
-  fs.unlink(imagePath, (err) => {
-    console.log(err);
-  });
   res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
 };
 
@@ -466,17 +524,33 @@ const resetPassword = async (req, res, next) => {
 const changeProfile = async (req, res, next) => {
   const { name } = req.body;
   let foundUser;
-
   try {
     foundUser = await User.findById(req.userData.userId);
   } catch (err) {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-  const imagePath = foundUser.profileImg;
+
+  if (req.file) {
+    const splitImagePath = foundUser.profileImg.split("/");
+    const imageKey = splitImagePath[splitImagePath.length - 1];
+    s3.deleteObject(
+      {
+        Bucket: "3dadaily",
+        Key: imageKey,
+      },
+      (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(data);
+        }
+      }
+    );
+  }
 
   foundUser.profileImg =
-    req.file !== undefined ? req.file.path : foundUser.profileImg;
+    req.file !== undefined ? req.file.location : foundUser.profileImg;
   foundUser.name = name;
 
   try {
@@ -485,9 +559,7 @@ const changeProfile = async (req, res, next) => {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-  fs.unlink(imagePath, (err) => {
-    console.log(err);
-  });
+
   res.status(200).json({ message: "프로필이 변경되었습니다." });
 };
 

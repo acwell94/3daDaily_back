@@ -7,6 +7,16 @@ const getCoordsForAddress = require("../util/location");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const dataForm = require("../util/dateForm");
+const AWS = require("aws-sdk");
+
+const ACCESS_KEY_ID = process.env.AWS_API_KEY;
+const ACCESS_SECRET_KEY_ID = process.env.AWS_API_SECRET_KEY;
+const ACCESS_REGION = process.env.AWS_REGION;
+const s3 = new AWS.S3({
+  accessKeyId: ACCESS_KEY_ID,
+  secretAccessKey: ACCESS_SECRET_KEY_ID,
+  region: ACCESS_REGION,
+});
 
 //  글 불러오기
 
@@ -145,7 +155,7 @@ const createContents = async (req, res, next) => {
     withWhom,
     what,
     feeling,
-    image: req.file.path,
+    image: req.file.location,
     // image,
     creator: req.userData.userId,
   });
@@ -223,7 +233,24 @@ const updateContents = async (req, res, next) => {
     return next(error);
   }
   const selectedDate = dataForm(new Date(date));
-  const imagePath = contents.image;
+
+  if (req.file) {
+    const splitImagePath = contents.image.split("/");
+    const imageKey = splitImagePath[splitImagePath.length - 1];
+    s3.deleteObject(
+      {
+        Bucket: "3dadaily",
+        Key: imageKey,
+      },
+      (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(data);
+        }
+      }
+    );
+  }
 
   contents.title = title;
   contents.firstContents = firstContents;
@@ -236,7 +263,7 @@ const updateContents = async (req, res, next) => {
   contents.withWhom = withWhom;
   contents.what = what;
   contents.feeling = feeling;
-  contents.image = req.file.path;
+  contents.image = req.file !== undefined ? req.file.location : contents.image;
 
   try {
     await contents.save();
@@ -244,9 +271,6 @@ const updateContents = async (req, res, next) => {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-  fs.unlink(imagePath, (err) => {
-    console.log(err);
-  });
 
   res.status(200).json({ contents });
 };
@@ -285,9 +309,20 @@ const deleteContents = async (req, res, next) => {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
-  fs.unlink(imagePath, (err) => {
-    console.log(err);
-  });
+
+  const splitImagePath = imagePath.split("/");
+  const imageKey = splitImagePath[splitImagePath.length - 1];
+
+  s3.deleteObject(
+    {
+      Bucket: "3dadaily",
+      Key: imageKey,
+    },
+    (err, data) => {
+      if (err) console.log(err);
+      else console.log(data);
+    }
+  );
 
   res.status(200).json({ message: "일기가 삭제되었습니다." });
 };
