@@ -1,12 +1,23 @@
 # 삼다일기 v1.0.0
+
+### 목차
+1. [서비스 소개](#-서비스-소개)
+2. [사용 기술](#-사용-기술)
+3. [DB 구성](#-db-구성)
+4. [API 명세서](#-api-명세서)
+5. [파일업로드](#-파일업로드)
+6. [배포](#-배포)
+
 ## 📌 서비스 소개
 <p align='center'>
 <img width='200px' src='https://user-images.githubusercontent.com/89783182/222035863-cd30cc07-2690-47b6-8cc7-7a829d95fd33.png'/>
 </p>
 🗒️ 간단하게 오늘 하루를 기록하는 서비스 웹 버전 🗒️
-[📌 사용 기술](#-파일업로드)
-사이트 : [https://www.3dadaily.store/](https://www.3dadaily.store/)
 
+사이트 : [https://www.3dadaily.store/](https://www.3dadaily.store/)
+<br>
+
+<br>
 ### [개발 배경](https://github.com/acwell94/3daDaily/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94)
 
 ## 📌 사용 기술
