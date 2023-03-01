@@ -23,7 +23,7 @@
 <br>
 사이트 : [https://www.3dadaily.store/](https://www.3dadaily.store/)
 
-### [개발 배경](https://github.com/acwell94/3daDaily/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94)
+### [개발 배경](https://github.com/acwell94/3daDaily_back/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94)
 
 ## 📌 사용 기술
 <p align='start'>
