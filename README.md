@@ -4,7 +4,7 @@
 <img width='200px' src='https://user-images.githubusercontent.com/89783182/222035863-cd30cc07-2690-47b6-8cc7-7a829d95fd33.png'/>
 </p>
 🗒️ 간단하게 오늘 하루를 기록하는 서비스 웹 버전 🗒️
-
+[📌 사용 기술](#-파일업로드)
 사이트 : [https://www.3dadaily.store/](https://www.3dadaily.store/)
 
 ### [개발 배경](https://github.com/acwell94/3daDaily/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94)
@@ -23,4 +23,25 @@
 <p align='center'>
   <img src='https://user-images.githubusercontent.com/89783182/222147447-4099d9e7-bf07-4870-a8b6-f8ae3e767d85.png'/>
 </p>
+
+## 📌 API 명세서
+
+### User API
+<p align='center'>
+<img  src="https://user-images.githubusercontent.com/89783182/222172542-1672439a-e14e-4cf3-b346-a7c6c173f20a.png">
+</p>
+
+### Contents API
+<p align='center'>
+<img src="https://user-images.githubusercontent.com/89783182/222178120-b744ccf0-d284-4dd4-b944-052c172405c3.png">
+</p>
+
+## 📌 파일업로드
+
+### AWS S3 이용
+
+* 파일업로드를 위해서 AWS S3를 이용하였습니다.<br>
+* aws-sdk, multer, multer-s3 라이브러리 사용하였습니다.<br>
+
+## 📌 배포
 
