@@ -11,9 +11,10 @@
 2. [사용 기술](#-사용-기술)
 3. [DB 구성](#-db-구성)
 4. [API 명세서](#-api-명세서)
-5. [파일업로드](#-파일업로드)
-6. [배포](#-배포)
-7. [History](#-history)
+5. [환경변수](#-환경변수)
+6. [파일업로드](#-파일업로드)
+7. [배포](#-배포)
+8. [History](#-history)
 
 ## 📌 서비스 소개
 <p align='center'>
@@ -51,6 +52,22 @@
 <p align='center'>
 <img src="https://user-images.githubusercontent.com/89783182/222178120-b744ccf0-d284-4dd4-b944-052c172405c3.png">
 </p>
+
+## 📌 환경변수
+
+|제목|내용|설명|
+|------|---|---|
+|JWT_KEY|JWT발급 키|JWT AccessToken 발급 키 네임|
+|REFRESH_KEY|JWT발급 키|JWT RefreshToken 발급 키 네임|
+|MONGO_USER|몽고디비 유저아이디|몽고디비 회원 아이디|
+|MONGO_NAME|몽고디비 데이터베이스 이름|몽고디비 데이터베이스 이름|
+|MONGO_PW|몽고디비 비밀번호|몽고디비 데이터베이스 접근 비밀번호|
+|PORT|서버포트|서버포트번호|
+|GOOGLE_API_KEY|구글 API 접근키|구글 API 접근 키|
+|AWS_API_KEY|AWS접근키|AWS접근 키|
+|AWS_API_SECRET_KEY|AWS접근 키|AWS접근 시크릿키|
+|AWS_REGION|AWS 지역|AWS 지역명|
+
 
 ## 📌 파일업로드
 
