@@ -2,7 +2,7 @@
 
 ### 개발기간
 
-* #### [v1.0.0](https://github.com/acwell94/3daDaily_back/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94) <span>2023.01.12 ~ 2023.02.22</span>
+* #### [v1.0.0](https://github.com/acwell94/3daDaily_back/wiki) <span>2023.01.12 ~ 2023.02.22</span>
 
 ##
 
@@ -23,7 +23,7 @@
 <br>
 사이트 : [https://www.3dadaily.store/](https://www.3dadaily.store/)
 
-### [개발 배경](https://github.com/acwell94/3daDaily_back/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94)
+### [개발 배경](https://github.com/acwell94/3daDaily_back/wiki)
 
 ## 📌 사용 기술
 <p align='start'>
@@ -66,4 +66,4 @@
 
 ## 📌 History
 
-#### [v1.0.0](https://github.com/acwell94/3daDaily_back/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B0%9C%EC%9A%94) <span>2023.02.22 배포</span>
+#### [v1.0.0](https://github.com/acwell94/3daDaily_back/wiki) <span>2023.02.22 배포</span>
