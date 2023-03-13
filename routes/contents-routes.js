@@ -18,16 +18,11 @@ router.post(
   fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
-    check("firstContents").not().isEmpty(),
-    check("secondContents").not().isEmpty(),
-    check("thirdContents").not().isEmpty(),
     check("date").not().isEmpty(),
     check("weather").not().isEmpty(),
-    check("address").not().isEmpty(),
     check("withWhom").not().isEmpty(),
     check("what").not().isEmpty(),
     check("feeling").not().isEmpty(),
-    // check("image").not().isEmpty(),
   ],
   contentsControllers.createContents
 );
@@ -37,12 +32,8 @@ router.patch(
   fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
-    check("firstContents").not().isEmpty(),
-    check("secondContents").not().isEmpty(),
-    check("thirdContents").not().isEmpty(),
     check("date").not().isEmpty(),
     check("weather").not().isEmpty(),
-    check("address").not().isEmpty(),
     check("withWhom").not().isEmpty(),
     check("what").not().isEmpty(),
     check("feeling").not().isEmpty(),
