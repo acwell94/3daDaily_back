@@ -138,7 +138,6 @@ const createContents = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
-
   const selectedDate = dataForm(new Date(date));
 
   const UserContents = mongoose.model(`${req.userData.userId}`, Contents);
@@ -155,8 +154,7 @@ const createContents = async (req, res, next) => {
     withWhom,
     what,
     feeling,
-    image: req.file.location,
-    // image,
+    image: req.file?.location ? req.file.location : "",
     creator: req.userData.userId,
   });
 
@@ -165,11 +163,11 @@ const createContents = async (req, res, next) => {
     user = await User.findById(req.userData.userId);
   } catch (err) {
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
-    return next(error);
+    return next(error, "2");
   }
   if (!user) {
     const error = new HttpError("유저를 찾을 수 없습니다.", 400);
-    return next(error);
+    return next(error, "3");
   }
   try {
     const sess = await mongoose.startSession();
@@ -180,6 +178,7 @@ const createContents = async (req, res, next) => {
     await user.save({ session: sess });
     await sess.commitTransaction();
   } catch (err) {
+    console.log(err);
     const error = new HttpError("일기 등록에 실패하였습니다.", 500);
     return next(error);
   }
@@ -268,6 +267,7 @@ const updateContents = async (req, res, next) => {
   try {
     await contents.save();
   } catch (err) {
+    console.log(err);
     const error = new HttpError("알 수 없는 오류가 발생하였습니다.", 500);
     return next(error);
   }
