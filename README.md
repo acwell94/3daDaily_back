@@ -3,6 +3,7 @@
 ### 개발기간
 
 * #### [v1.0.0](https://github.com/acwell94/3daDaily_back/wiki) <span>2023.01.12 ~ 2023.02.22</span>
+* #### [v1.0.1](https://github.com/acwell94/3daDaily_back/wiki/v1.0.1) <span>2023.03.15 </span>
 
 ##
 
@@ -85,3 +86,4 @@
 ## 📌 History
 
 #### [v1.0.0](https://github.com/acwell94/3daDaily_back/wiki) <span>2023.02.22 배포</span>
+#### [v1.0.1](https://github.com/acwell94/3daDaily_back/wiki/v1.0.1) <span>2023.03.15 </span>
